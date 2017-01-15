@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="file:///usr/lib/erlang" />
     </CLASSES>
+    <JAVADOC />
     <SOURCES />
   </library>
 </component>
