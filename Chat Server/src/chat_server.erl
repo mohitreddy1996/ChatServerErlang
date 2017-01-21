@@ -10,12 +10,13 @@
 -author("mohit").
 -import(server_handler, []).
 %% API
--export([]).
+-export([start/1, pre_loop/1]).
 
 % Basic modules : 1) start server 2) loop 3) pre loop/pre-loading data 4) private message 5) group message 6) quit.
 
 start(Port) ->
-  io:format("Hi").
+  controller:start(),
+  tcp_server:start(?MODULE, Port, {?MODULE, pre_loop}).
 
 pre_loop(Socket)  ->
   case gen_tcp:recv(Socket, 0) of
@@ -37,13 +38,13 @@ pre_loop(Socket)  ->
   end.
 
 try_connection(Nick, Socket)  ->
-  Response = gen_server:call(server_handler, {connect, Nick, Socket}),
+  Response = gen_server:call(controller, {connect, Nick, Socket}),
   case Response of
     {ok, List}  ->
       % send the confirmation.
       gen_tcp:send(Socket, "Connect:Success:" ++ List ++"\n"),
       % cast to all clients saying a new client joined the chat.
-      gen_server:cast(server_handler, {join, Nick}),
+      gen_server:cast(controller, {join, Nick}),
       % loop for the new Nickname and socket.
       loop(Nick, Socket);
     nickname_already_used ->
@@ -73,24 +74,24 @@ loop(Nick, Socket)  ->
       ok
   end.
 
-% group message code. cast the content recieved.
+% group message code. cast the content received.
 group_message(Nick, Socket, Content)  ->
-  gen_server:cast(server_handler, {group_message, Nick, Content}),
+  gen_server:cast(controller, {group_message, Nick, Content}),
   % again keep listening if new message arrives.
   loop(Nick, Socket).
 
 % private message code. case the content. Add new param receiver.
 private_message(Nick, Socket, Receiver, Message)  ->
-  gen_server:cast(server_handler, {private_message, Nick, Receiver, Message}),
+  gen_server:cast(controller, {private_message, Nick, Receiver, Message}),
   loop(Nick, Socket).
 
 % leave the chat server.
 leave(Nick, Socket) ->
-  Response = gen_server:call(server_handler, {leave, Nick}),
+  Response = gen_server:call(controller, {leave, Nick}),
   case Response of
     ok  ->
       gen_tcp:send(Socket, "Bye :) \n"),
-      gen_server:cast(server_handler, {leave, Nick}),
+      gen_server:cast(controller, {leave, Nick}),
       ok;
     user_not_found  ->
       gen_tcp:send(Socket, "User not Found !"),
