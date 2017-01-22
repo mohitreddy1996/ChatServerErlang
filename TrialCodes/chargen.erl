@@ -33,7 +33,7 @@ loop(Socket)  ->
   loop(Socket, ?START_CHAR_CONST).
 
 loop(Socket, ?END_CHAR_CONST) ->
-  loop(Socket, ?START_CHAR_CONST).
+  loop(Socket, ?START_CHAR_CONST);
 
 loop(Socket, StartChar) ->
   Line = make_line(StartChar),
