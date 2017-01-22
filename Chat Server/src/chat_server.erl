@@ -2,21 +2,21 @@
 %%% @author mohit
 %%% @copyright (C) 2017, <COMPANY>
 %%% @doc
-%%% Concurrent Application which takes events as Input from client and notifies clients when deadline approaches.
+%%% Basic Chat server using Erlang.
 %%% @end
 %%% Created : 17. Jan 2017 5:51 PM
 %%%-------------------------------------------------------------------
 -module(chat_server).
 -author("mohit").
--import(server_handler, []).
 %% API
 -export([start/1, pre_loop/1]).
-
+-import(server_calls_handler, [start/0]).
+-import(tcp_server_helper, [start/3]).
 % Basic modules : 1) start server 2) loop 3) pre loop/pre-loading data 4) private message 5) group message 6) quit.
 
 start(Port) ->
-  controller:start(),
-  tcp_server:start(?MODULE, Port, {?MODULE, pre_loop}).
+  server_calls_handler:start(),
+  tcp_server_helper:start(?MODULE, Port, {?MODULE, pre_loop}).
 
 pre_loop(Socket)  ->
   case gen_tcp:recv(Socket, 0) of

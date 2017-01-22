@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 21. Jan 2017 4:00 PM
 %%%-------------------------------------------------------------------
--module(tcp_server).
+-module(tcp_server_helper).
 -author("mohit").
 
 -behavior(gen_server).
@@ -42,7 +42,7 @@ accept(State = #server_state{lsocket = LSocket, loop = Loop}) ->
 handle_call(Request, From, State) ->
   {noreply, State}.
 
-handle_cast({accepted, _Pid}, State = #server_state) ->
+handle_cast({accepted, _Pid}, State = #server_state{}) ->
   {noreply, accept(State)}.
 
 handle_info(Info, State) ->

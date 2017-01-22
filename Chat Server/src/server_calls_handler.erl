@@ -6,7 +6,7 @@
 %%% @end
 %%% Created : 17. Jan 2017 6:56 PM
 %%%-------------------------------------------------------------------
--module(controller).
+-module(server_calls_handler).
 -author("mohit").
 -behavior(gen_server).
 %% API
@@ -21,7 +21,7 @@ init([]) ->
   Users = dict:new(),
   {ok, Users}.
 
-% handle call is called when gen_server:call is called.
+% handle call is called when gen_server:call is called. Handle synchronous calls.
 % handle calls for each of the cases. Connect and leave to be implemented.
 % generic handle call to control error.
 handle_call({connect, Nick, Socket}, _From, Users) ->
@@ -34,7 +34,7 @@ handle_call({connect, Nick, Socket}, _From, Users) ->
                  NewUsers = dict:append(Nick, Socket, Users),
                  {ok, get_user_list(NewUsers)}
              end,
-  {reply, Response, NewUsers}.
+  {reply, Response, NewUsers};
 
 handle_call({leave, Nick}, _From, Users) ->
   Response = case dict:is_key(Nick, Users) of
@@ -45,12 +45,12 @@ handle_call({leave, Nick}, _From, Users) ->
                  NewUsers = Users,
                  user_not_found
              end,
-  {reply, Response, NewUsers}.
+  {reply, Response, NewUsers};
 
 handle_call(Request, From, State) ->
   {reply, error, State}.
 
-% Handle Casts for private message, Group Message, join, leave.
+% Handle Casts for private message, Group Message, join, leave. Handle asynchronous calls.
 % Handle Cast for other messages as errors.
 handle_cast({private_message, Nick, Receiver, Message}, Users) ->
   Temp = case dict:find(Receiver, Users) of
@@ -59,7 +59,7 @@ handle_cast({private_message, Nick, Receiver, Message}, Users) ->
            _  ->
              ok
          end,
-  {noreply, Users}.
+  {noreply, Users};
 
 handle_cast({group_message, Nick, Message}, Users) ->
   broadcast(Nick, "SAID:" ++ Nick ++ ":" ++ Message ++"\n", Users),
